@@ -1,0 +1,10 @@
+services:
+  web:
+    build: .
+    volumes:
+      - .:/kafka_app
+
+networks:
+  kafka-network:
+    external: true
+    name: streaming_docker_my-network
