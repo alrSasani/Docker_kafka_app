@@ -1,5 +1,0 @@
-randomuser
-flask
-
-confluent-kafka
-python-dotenv

@@ -7,6 +7,4 @@ COPY . /kafka_app
 RUN pip install --upgrade pip 
 RUN pip install --no-cache-dir -r /kafka_app/requirments.txt
 
-
-# Run app.py when the container launches
 CMD python producer.py & python consumer.py

@@ -2,26 +2,31 @@ version: '3.8'
 
 services:
   user_api:
-    build: ./1_RealTime_Stream/
-    hostname: user_api    
+    build: ./user_api/
+    hostname: user_api
     ports:
       - "5000:5000"
     networks:
       - stream_network   
     volumes:
-      - ./1_RealTime_Stream:/app  
+      - ./user_api:/app  
     environment:
       - FLASK_ENV=development
 
   kafka_app:
-    build: ./ 2_Kafka_app/
+    build: ./kafka_app/
     volumes:
-      - ./2_Kafka_app:/kafka_app   
+      - ./kafka_app:/kafka_app   
     depends_on:
       - kafka
       - user_api
+      - postgres
+      - mongo
+    env_file:
+      - ./kafka_app/.env  
     networks:
-      - stream_network     
+      - stream_network 
+      - kafka_network    
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
@@ -30,7 +35,7 @@ services:
     ports:
       - "2181:2181"
     networks:
-      - stream_network      
+      - kafka_network      
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -45,7 +50,7 @@ services:
       - "9092:9092"
       - "29092:29092"
     networks:
-      - stream_network      
+      - kafka_network     
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -63,13 +68,41 @@ services:
     ports:
       - "9000:9000"
     networks:
-      - stream_network     
+      - kafka_network     
     environment:
       KAFKA_BROKERCONNECT: "kafka:9092"
       JVM_OPTS: "-Xms32M -Xmx64M"
       SERVER_SERVLET_CONTEXTPATH: "/"
 
+  mongo:
+    image: mongo
+    container_name: mongo
+    hostname: mongo   
+    networks:
+      - stream_network      
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./DB_data/mongo_data:/data/db
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    hostname: postgres    
+    networks:
+      - stream_network      
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: kafka
+      POSTGRES_PASSWORD: kafkapass
+      POSTGRES_DB: streamDB
+    volumes:
+      - ./DB_data/pg_data:/var/lib/postgresql/data
+
 networks:
   stream_network:
     driver: bridge
+  kafka_network:
+    driver: bridge    
 
