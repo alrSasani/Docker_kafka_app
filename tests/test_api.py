@@ -1,13 +1,11 @@
-# tests/test_api.py
-from fastapi.testclient import TestClient
-from app.main import app
+import requests
 
-client = TestClient(app)
 
-def test_create_user():
-    response = client.post(
-        "/users",
-        json={"name": "Test User", "email": "test@example.com"}
-    )
-    assert response.status_code == 201
-    assert response.json()["email"] == "test@example.com"
+def test_user_api_docker_connection():
+    usr_dict = requests.get("http://user_api:5000/user").json()
+    assert usr_dict 
+    
+def test_docker_api():
+    usr_dict = requests.get("http://user_api:5000/user").json()
+    assert len(usr_dict) == 6
+ 
